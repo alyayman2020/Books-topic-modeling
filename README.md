@@ -6,7 +6,6 @@
 ![OpenAI](https://img.shields.io/badge/OpenAI-API--only-412991?logo=openai&logoColor=white)
 ![UMAP](https://img.shields.io/badge/UMAP-densMAP-orange)
 ![HDBSCAN](https://img.shields.io/badge/HDBSCAN-Optuna--tuned-green)
-![GPU](https://img.shields.io/badge/GPU-not%20required-lightgrey)
 
 > Thousands of books, sampled **evenly across every genre**, are embedded from two complementary signals — the book's own content and the language of its reader reviews — then fused, projected, clustered into human-meaningful reader-interest groups, **named and described by an LLM reading real reviews**, scored against a multi-metric evaluation panel, and served as an interactive, zoomable atlas. End to end on cheap API calls. No GPU. No fine-tuning.
 
