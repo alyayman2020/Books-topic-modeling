@@ -1,0 +1,14 @@
+# Point these at your raw Goodreads files. Interactions / id-maps are intentionally NOT used.
+paths:
+  books:   data/raw/goodreads_books.json
+  reviews: data/raw/goodreads_reviews_dedup.json
+  authors: data/raw/goodreads_book_authors.json
+  works:   data/raw/goodreads_book_works.json
+  genres:  data/raw/goodreads_book_genres_initial.json
+  series:  data/raw/goodreads_book_series.json
+
+processed_dir: data/processed        # working intermediates (deletable after freeze)
+dataset_dir:   data/dataset_250k      # frozen bundle (legacy name from the 250K plan; kept for path stability)
+artifacts_dir: data/artifacts
+reports_dir:   reports
+models_dir:    models

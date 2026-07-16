@@ -1,0 +1,58 @@
+stages:
+  ingest:
+    cmd: python -m book_atlas.ingest
+    outs: [data/processed/books_all.parquet, data/processed/authors.parquet,
+           data/processed/works.parquet, data/processed/series.parquet, data/processed/genres.parquet]
+  select:
+    cmd: python -m book_atlas.select_stratified
+    deps: [data/processed/books_all.parquet, data/processed/genres.parquet]
+    params: [select]
+    outs: [data/processed/books_top.parquet, data/processed/reviews_top.parquet]
+  freeze:
+    cmd: python -m book_atlas.freeze_dataset
+    deps: [data/processed/books_top.parquet, data/processed/reviews_top.parquet]
+    outs: [data/dataset_250k/books.parquet, data/dataset_250k/reviews.parquet,
+           data/dataset_250k/manifest.json]
+  build_docs:
+    cmd: python -m book_atlas.build_documents
+    deps: [data/dataset_250k/books.parquet]
+    outs: [data/processed/documents.parquet]
+  reviews:
+    cmd: python -m book_atlas.reviews
+    deps: [data/dataset_250k/reviews.parquet]
+    params: [reviews, embedding, llm]
+    outs: [data/artifacts/review_pool.npy, data/artifacts/review_pool_ids.parquet]
+    # note: distillation artifacts (review_distill*.{npy,parquet}, checkpoint jsonl)
+    # are conditional on reviews.distill and intentionally left untracked.
+  embed:
+    cmd: python -m book_atlas.embed
+    deps: [data/processed/documents.parquet]
+    params: [embedding]
+    outs: [data/artifacts/content_vectors.npy, data/artifacts/content_ids.parquet]
+  fuse:
+    cmd: python -m book_atlas.fuse
+    deps: [data/artifacts/content_vectors.npy, data/artifacts/review_pool.npy]
+    params: [fusion]
+    outs: [data/artifacts/book_vectors.npy, data/artifacts/book_ids.parquet]
+  reduce:
+    cmd: python -m book_atlas.reduce
+    deps: [data/artifacts/book_vectors.npy]
+    params: [reduce, cluster.hdbscan.min_cluster_size]
+    outs: [data/artifacts/book_nd.npy, data/artifacts/book_2d.npy]
+  cluster:
+    cmd: python -m book_atlas.cluster
+    deps: [data/artifacts/book_nd.npy, data/artifacts/book_ids.parquet]
+    params: [cluster]
+    outs: [data/artifacts/clusters.parquet]
+  label:
+    cmd: python -m book_atlas.label
+    deps: [data/artifacts/clusters.parquet, data/processed/documents.parquet,
+           data/dataset_250k/books.parquet, data/dataset_250k/reviews.parquet]
+    params: [label, llm]
+    outs: [data/artifacts/cluster_labels.parquet]
+  evaluate:
+    cmd: python -m book_atlas.evaluate
+    deps: [data/artifacts/clusters.parquet, data/artifacts/book_nd.npy,
+           data/artifacts/cluster_labels.parquet]
+    params: [llm_judge]
+    metrics: [reports/metrics.json]

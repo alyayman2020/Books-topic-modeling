@@ -1,0 +1,62 @@
+select:
+  n_books: 5000                # total books (Phase 0 pilot: 500)
+  stratify_by: top_genre       # balance the sample across this category field
+  rank_by: text_reviews_count  # within each category, prefer the most-reviewed
+
+embedding:
+  backend: openai              # openai | local
+  openai_model: text-embedding-3-small
+  api_key_env: OPENAI_API_KEY
+  # local-only options (ignored when backend: openai):
+  model: Qwen/Qwen3-Embedding-0.6B
+  max_seq_length: 256
+  batch_size: 64
+  dtype: float16
+  normalize: true
+
+reviews:
+  max_reviews_per_book: 10     # keep the N longest reviews per book
+  select_by: longest           # longest | votes | all
+  weight_by_votes: true
+  distill: true                # gpt-5.4-nano "reader perception" summary (main cost; set false for ~$0.25 total)
+  distill_top_n: 5000
+  distill_max_reviews_in_prompt: 10
+
+llm:                           # distillation, labeling, and LLM-as-judge
+  provider: openai             # openai | glm | deepseek | local
+  model: gpt-5.4-nano
+  api_key_env: OPENAI_API_KEY
+  temperature: 0.3             # set to null for models that reject sampling params
+                               # (GPT-5-family accepts temperature only at reasoning effort 'none',
+                               #  which is gpt-5.4-nano's default; the client also auto-falls-back)
+
+fusion:
+  w_content: 0.5
+  w_review_pool: 0.3
+  w_review_distill: 0.2
+
+reduce:                        # NO PCA. Benchmark reducers, pick best by DBCV.
+  reducers: [umap]
+  umap:
+    n_neighbors: 15
+    n_components: 10
+    min_dist: 0.0
+    metric: cosine
+    random_state: 42
+
+cluster:
+  optuna_trials: 40
+  noise_penalty: 0.5
+  soft_reassign_threshold: 0.05
+  merge_cosine_threshold: 0.92
+  hdbscan:
+    min_cluster_size: 25       # smaller, since only 5k books
+
+label:
+  top_keywords: 12
+  n_representatives: 6
+  review_snippets_per_cluster: 6   # real review excerpts fed to the LLM
+
+llm_judge:
+  enabled: true
+  sample_clusters: 30

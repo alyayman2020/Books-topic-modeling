@@ -1,0 +1,75 @@
+# =========================================================
+#  Semantic Book Atlas — .gitignore
+#  Three things must NEVER reach GitHub:
+#    1. Secrets (.env — your API key)
+#    2. Data (raw Goodreads files are multi-GB AND academic-
+#       use licensed; artifacts include a ~90MB vector file
+#       that hits GitHub's 100MB hard limit)
+#    3. Environment junk (venv, caches, OS files)
+# =========================================================
+
+# ---------- 1 · SECRETS ----------
+.env
+.env.*
+!.env.example              # the template IS committed — it contains no key
+.streamlit/secrets.toml
+
+# ---------- 2 · DATA & ARTIFACTS ----------
+data/raw/
+data/processed/
+data/dataset_250k/          # frozen bundle: reviews.parquet alone is ~GB-scale
+data/artifacts/             # book_vectors.npy ≈ 90MB > sane repo size
+data/
+models/
+*.npy
+*.parquet
+*.jsonl                     # distillation checkpoints (paid API outputs)
+data/dataset_250k/books.parquet
+data/dataset_250k/manifest.json
+data/dataset_250k/reviews.parquet
+data/dataset_250k/series.parquet
+
+# dataset archives sitting in the project root
+*.zip
+*.tar
+*.gz
+*.7z
+
+# reports are per-run outputs; regenerate with `python -m book_atlas.evaluate`
+reports/
+# To showcase the static map on GitHub, un-comment the next two lines:
+# !reports/
+# !reports/figures/book_atlas_map.html
+
+# ---------- 3 · PYTHON / ENVIRONMENT ----------
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+src/*.egg-info/
+build/
+dist/
+.python-version
+
+# tooling caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.log
+
+# ---------- DVC internals (dvc.yaml + dvc.lock ARE committed) ----------
+.dvc/cache/
+.dvc/tmp/
+.dvc/config.local
+
+# ---------- IDE / OS ----------
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
